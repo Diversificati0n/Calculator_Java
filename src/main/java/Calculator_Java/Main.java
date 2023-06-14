@@ -32,7 +32,7 @@ public class Main {
             System.out.println(result);
         } catch (Exception e) {
             System.out.println("Вывод:");
-            System.out.println("Ошибка");
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
 
@@ -40,7 +40,7 @@ public class Main {
         String[] tokens = input.split(" ");
 
         if (tokens.length != 3) {
-            throw new Exception();
+            throw new Exception("Некорректное выражение");
         }
 
         String operand1 = tokens[0];
@@ -51,7 +51,7 @@ public class Main {
         boolean isArabic = isArabicNumeral(operand1) && isArabicNumeral(operand2);
 
         if (!isRoman && !isArabic) {
-            throw new Exception();
+            throw new Exception("Ошибка системы счисления");
         }
 
         int result;
@@ -59,8 +59,8 @@ public class Main {
             int num1 = romanToArabic(operand1);
             int num2 = romanToArabic(operand2);
             result = calculate(num1, operator, num2);
-            if (result < 1) {
-                throw new Exception();
+            if (num1 < 1 || num1 > 10 || num2 < 1 || num2 > 10) {
+                throw new Exception("Некорректный ввод");
             }
             return arabicToRoman(result);
         } else {
@@ -90,14 +90,16 @@ public class Main {
 
     private static String arabicToRoman(int number) {
         StringBuilder result = new StringBuilder();
-        for (int i = RomanNumbers.size() - 1; i >= 0; i--) {
-            String romanNumeral = (String) RomanNumbers.keySet().toArray()[i];
-            int arabicValue = RomanNumbers.get(romanNumeral);
-            while (number >= arabicValue) {
-                result.append(romanNumeral);
-                number -= arabicValue;
+        String[] romanSymbols = { "X", "IX", "V", "IV", "I" };
+        int[] arabicValues = { 10, 9, 5, 4, 1 };
+
+        for (int i = 0; i < romanSymbols.length; i++) {
+            while (number >= arabicValues[i]) {
+                result.append(romanSymbols[i]);
+                number -= arabicValues[i];
             }
         }
+
         return result.toString();
     }
 
@@ -115,7 +117,7 @@ public class Main {
                 }
                 return num1 / num2;
             default:
-                throw new Exception();
+                throw new Exception("Ошибка");
         }
     }
 }
