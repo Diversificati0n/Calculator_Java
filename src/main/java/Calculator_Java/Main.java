@@ -1,123 +1,129 @@
 package Calculator_Java;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 public class Main {
-    private static final Map<String, Integer> RomanNumbers = new HashMap<>();
-
-    static {
-        RomanNumbers.put("I", 1);
-        RomanNumbers.put("II", 2);
-        RomanNumbers.put("III", 3);
-        RomanNumbers.put("IV", 4);
-        RomanNumbers.put("V", 5);
-        RomanNumbers.put("VI", 6);
-        RomanNumbers.put("VII", 7);
-        RomanNumbers.put("VIII", 8);
-        RomanNumbers.put("IX", 9);
-        RomanNumbers.put("X", 10);
-    }
-
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Введите арифметическое выражение (пробел после каждого знака):");
-        String input = scanner.nextLine();
-
-        try {
-            String result = calc(input);
-            System.out.println("Вывод:");
-            System.out.println(result);
-        } catch (Exception e) {
-            System.out.println("Вывод:");
-            System.out.println("Ошибка: " + e.getMessage());
-        }
-    }
-
-    public static String calc(String input) throws Exception {
-        String[] tokens = input.split(" ");
-
-        if (tokens.length != 3) {
-            throw new Exception("Некорректное выражение");
-        }
-
-        String operand1 = tokens[0];
-        String operator = tokens[1];
-        String operand2 = tokens[2];
-
-        boolean isRoman = isRomanNumeral(operand1) && isRomanNumeral(operand2);
-        boolean isArabic = isArabicNumeral(operand1) && isArabicNumeral(operand2);
-
-        if (!isRoman && !isArabic) {
-            throw new Exception("Ошибка системы счисления");
-        }
-
-        int result;
-        if (isRoman) {
-            int num1 = romanToArabic(operand1);
-            int num2 = romanToArabic(operand2);
-            result = calculate(num1, operator, num2);
-            if (num1 < 1 || num1 > 10 || num2 < 1 || num2 > 10) {
-                throw new Exception("Некорректный ввод");
+        Converter converter = new Converter();
+        String[] actions = {"+", "-", "/", "*"};
+        String[] regexActions = {"\\+", "-", "/", "\\*"};
+        Scanner scn = new Scanner(System.in);
+        System.out.print("Введите выражение: ");
+        String exp = scn.nextLine();
+        int actionIndex = -1;
+        for (int i = 0; i < actions.length; i++) {
+            if (exp.contains(actions[i])) {
+                actionIndex = i;
+                break;
             }
-            return arabicToRoman(result);
+        }
+
+        if (actionIndex == -1) {
+            System.out.println("Некорректное выражение");
+            return;
+        }
+
+        String[] data = exp.split(regexActions[actionIndex]);
+
+        if (converter.isRoman(data[0]) == converter.isRoman(data[1])) {
+            int a, b;
+
+            boolean isRoman = converter.isRoman(data[0]);
+            if (isRoman) {
+
+                a = converter.romanToInt(data[0]);
+                b = converter.romanToInt(data[1]);
+            } else {
+
+                a = Integer.parseInt(data[0]);
+                b = Integer.parseInt(data[1]);
+            }
+
+            int result;
+            switch (actions[actionIndex]) {
+                case "+":
+                    result = a + b;
+                    break;
+                case "-":
+                    result = a - b;
+                    break;
+                case "*":
+                    result = a * b;
+                    break;
+                default:
+                    result = a / b;
+                    break;
+            }
+
+            if (isRoman) {
+                System.out.println(converter.intToRoman(result));
+            } else {
+                System.out.println(result);
+            }
         } else {
-            int num1 = Integer.parseInt(operand1);
-            int num2 = Integer.parseInt(operand2);
-            result = calculate(num1, operator, num2);
-            return Integer.toString(result);
+            System.out.println("Числа должны быть в одном формате");
         }
     }
+}
 
-    private static boolean isRomanNumeral(String input) {
-        return RomanNumbers.containsKey(input);
+class Converter {
+    TreeMap<Character, Integer> romanKeyMap = new TreeMap<>();
+    TreeMap<Integer, String> arabianKeyMap = new TreeMap<>();
+
+    public Converter() {
+        romanKeyMap.put('I', 1);
+        romanKeyMap.put('V', 5);
+        romanKeyMap.put('X', 10);
+        romanKeyMap.put('L', 50);
+        romanKeyMap.put('C', 100);
+        romanKeyMap.put('D', 500);
+        romanKeyMap.put('M', 1000);
+
+        arabianKeyMap.put(1000, "M");
+        arabianKeyMap.put(900, "CM");
+        arabianKeyMap.put(500, "D");
+        arabianKeyMap.put(400, "CD");
+        arabianKeyMap.put(100, "C");
+        arabianKeyMap.put(90, "XC");
+        arabianKeyMap.put(50, "L");
+        arabianKeyMap.put(40, "XL");
+        arabianKeyMap.put(10, "X");
+        arabianKeyMap.put(9, "IX");
+        arabianKeyMap.put(5, "V");
+        arabianKeyMap.put(4, "IV");
+        arabianKeyMap.put(1, "I");
     }
 
-    private static boolean isArabicNumeral(String input) {
-        try {
-            Integer.parseInt(input);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public boolean isRoman(String number) {
+        return romanKeyMap.containsKey(number.charAt(0));
     }
 
-    private static int romanToArabic(String romanNumeral) {
-        return RomanNumbers.get(romanNumeral);
+    public String intToRoman(int number) {
+        String roman = "";
+        int arabianKey;
+        do {
+            arabianKey = arabianKeyMap.floorKey(number);
+            roman += arabianKeyMap.get(arabianKey);
+            number -= arabianKey;
+        } while (number != 0);
+        return roman;
     }
 
-    private static String arabicToRoman(int number) {
-        StringBuilder result = new StringBuilder();
-        String[] romanSymbols = { "X", "IX", "V", "IV", "I" };
-        int[] arabicValues = { 10, 9, 5, 4, 1 };
-
-        for (int i = 0; i < romanSymbols.length; i++) {
-            while (number >= arabicValues[i]) {
-                result.append(romanSymbols[i]);
-                number -= arabicValues[i];
+    public int romanToInt(String s) {
+        int end = s.length() - 1;
+        char[] arr = s.toCharArray();
+        int arabian;
+        int result = romanKeyMap.get(arr[end]);
+        for (int i = end - 1; i >= 0; i--) {
+            arabian = romanKeyMap.get(arr[i]);
+            if (arabian < romanKeyMap.get(arr[i + 1])) {
+                result -= arabian;
+            } else {
+                result += arabian;
             }
         }
-
-        return result.toString();
-    }
-
-    private static int calculate(int num1, String operator, int num2) throws Exception {
-        switch (operator) {
-            case "+":
-                return num1 + num2;
-            case "-":
-                return num1 - num2;
-            case "*":
-                return num1 * num2;
-            case "/":
-                if (num2 == 0) {
-                    throw new ArithmeticException("Деление на ноль");
-                }
-                return num1 / num2;
-            default:
-                throw new Exception("Ошибка");
-        }
+        return result;
     }
 }
