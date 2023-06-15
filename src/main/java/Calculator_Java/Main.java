@@ -5,13 +5,13 @@ import java.util.TreeMap;
 
 public class Main {
     public static void main(String[] args) {
-
         Converter converter = new Converter();
         String[] actions = {"+", "-", "/", "*"};
         String[] regexActions = {"\\+", "-", "/", "\\*"};
         Scanner scn = new Scanner(System.in);
         System.out.print("Введите выражение: ");
         String exp = scn.nextLine();
+
         int actionIndex = -1;
         for (int i = 0; i < actions.length; i++) {
             if (exp.contains(actions[i])) {
@@ -29,41 +29,58 @@ public class Main {
 
         if (converter.isRoman(data[0]) == converter.isRoman(data[1])) {
             int a, b;
-
             boolean isRoman = converter.isRoman(data[0]);
-            if (isRoman) {
+            try {
+                if (isRoman) {
+                    a = converter.romanToInt(data[0]);
+                    b = converter.romanToInt(data[1]);
+                    if (a < 1 || a > 10 || b < 1 || b > 10) {
+                        System.out.println("Римские числа от I до X");
+                        return;
+                    }
+                } else {
+                    a = Integer.parseInt(data[0]);
+                    b = Integer.parseInt(data[1]);
+                    if (a < 1 || a > 10 || b < 1 || b > 10) {
+                        System.out.println("Арабские числа от 1 до 10");
+                        return;
+                    }
+                }
 
-                a = converter.romanToInt(data[0]);
-                b = converter.romanToInt(data[1]);
-            } else {
+                int result;
+                switch (actions[actionIndex]) {
+                    case "+":
+                        result = a + b;
+                        break;
+                    case "-":
+                        result = a - b;
+                        break;
+                    case "*":
+                        result = a * b;
+                        break;
+                    default:
+                        if (b == 0) {
+                            System.out.println("Деление на ноль");
+                            return;
+                        }
+                        result = a / b;
+                        break;
+                }
 
-                a = Integer.parseInt(data[0]);
-                b = Integer.parseInt(data[1]);
-            }
-
-            int result;
-            switch (actions[actionIndex]) {
-                case "+":
-                    result = a + b;
-                    break;
-                case "-":
-                    result = a - b;
-                    break;
-                case "*":
-                    result = a * b;
-                    break;
-                default:
-                    result = a / b;
-                    break;
-            }
-
-            if (isRoman) {
-                System.out.println(converter.intToRoman(result));
-            } else {
-                System.out.println(result);
+                if (isRoman) {
+                    if (result <= 0) {
+                        System.out.println("Некорректный результат римских чисел");
+                        return;
+                    }
+                    System.out.println(converter.intToRoman(result));
+                } else {
+                    System.out.println(result);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Некорректные числа");
             }
         } else {
-            System.out.println("Числа должны быть в одном формате");
+            System.out.println("Неверный формат");
         }
     }
 }
