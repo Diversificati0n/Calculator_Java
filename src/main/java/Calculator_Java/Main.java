@@ -5,27 +5,36 @@ import java.util.TreeMap;
 
 public class Main {
     public static void main(String[] args) {
-        Converter converter = new Converter();
-        String[] actions = {"+", "-", "/", "*"};
-        String[] regexActions = {"\\+", "-", "/", "\\*"};
         Scanner scn = new Scanner(System.in);
         System.out.print("Введите выражение: ");
         String exp = scn.nextLine();
 
+        String result = calc(exp);
+        System.out.println(result);
+    }
+
+    public static String calc(String input) {
+        Converter converter = new Converter();
+        String[] actions = {"+", "-", "/", "*"};
+        String[] regexActions = {"\\+", "-", "/", "\\*"};
+
         int actionIndex = -1;
         for (int i = 0; i < actions.length; i++) {
-            if (exp.contains(actions[i])) {
+            if (input.contains(actions[i])) {
                 actionIndex = i;
                 break;
             }
         }
 
         if (actionIndex == -1) {
-            System.out.println("Некорректное выражение");
-            return;
+            return "Некорректное выражение";
         }
 
-        String[] data = exp.split(regexActions[actionIndex]);
+        String[] data = input.split(regexActions[actionIndex]);
+
+        if (data.length != 2) {
+            return "Некорректное количество операндов";
+        }
 
         if (converter.isRoman(data[0]) == converter.isRoman(data[1])) {
             int a, b;
@@ -35,15 +44,13 @@ public class Main {
                     a = converter.romanToInt(data[0]);
                     b = converter.romanToInt(data[1]);
                     if (a < 1 || a > 10 || b < 1 || b > 10) {
-                        System.out.println("Римские числа от I до X");
-                        return;
+                        return "Римские числа от I до X";
                     }
                 } else {
                     a = Integer.parseInt(data[0]);
                     b = Integer.parseInt(data[1]);
                     if (a < 1 || a > 10 || b < 1 || b > 10) {
-                        System.out.println("Арабские числа от 1 до 10");
-                        return;
+                        return "Арабские числа от 1 до 10";
                     }
                 }
 
@@ -60,8 +67,7 @@ public class Main {
                         break;
                     default:
                         if (b == 0) {
-                            System.out.println("Деление на ноль");
-                            return;
+                            return "Деление на ноль";
                         }
                         result = a / b;
                         break;
@@ -69,18 +75,17 @@ public class Main {
 
                 if (isRoman) {
                     if (result <= 0) {
-                        System.out.println("Некорректный результат римских чисел");
-                        return;
+                        return "Некорректный результат римских чисел";
                     }
-                    System.out.println(converter.intToRoman(result));
+                    return converter.intToRoman(result);
                 } else {
-                    System.out.println(result);
+                    return String.valueOf(result);
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Некорректные числа");
+                return "Некорректные числа";
             }
         } else {
-            System.out.println("Неверный формат");
+            return "Неверный формат";
         }
     }
 }
